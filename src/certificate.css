@@ -1,0 +1,144 @@
+/* Ratio A4: la maqueta se diseñó a 900×1273px (proporción A4 exacta,
+   0.7071) para verse cómoda en el visor del Artifact — no es el tamaño
+   físico real. En vez de recalcular a mano cada medida del diseño ya
+   aprobado a mm, se deja el diseño intacto a 900×1273 "px de diseño" y se
+   reescala con transform sólo al imprimir, contra un contenedor del
+   tamaño físico real de A4. 210mm a 96dpi = 793.7008px; 793.7008/900 =
+   0.881890 — ese es el factor de abajo. */
+.cert-print-wrap{ width:900px; margin:0 auto; }
+
+.sheet{
+  width:900px; height:1273px; background:var(--ink); padding:14px;
+  position:relative; margin:0 auto;
+  clip-path: path('M 22,0 L 878,0 A 22,22 0 0 0 900,22 L 900,1251 A 22,22 0 0 0 878,1273 L 22,1273 A 22,22 0 0 0 0,1251 L 0,22 A 22,22 0 0 0 22,0 Z');
+}
+.sheet-inner{
+  width:100%; height:100%; background:var(--paper); position:relative; overflow:hidden;
+  display:flex; flex-direction:column; padding:46px 52px 0;
+  clip-path: path('M 8,0 L 864,0 A 8,8 0 0 0 872,8 L 872,1237 A 8,8 0 0 0 864,1245 L 8,1245 A 8,8 0 0 0 0,1237 L 0,8 A 8,8 0 0 0 8,0 Z');
+}
+
+.wm-relief{
+  position:absolute; inset:0; pointer-events:none;
+  background-image: repeating-linear-gradient(135deg,
+    rgba(16,21,30,0.035) 0px, rgba(16,21,30,0.035) 0.6px,
+    transparent 0.6px, transparent 8px);
+}
+.wm-tower{
+  position:absolute; width:900px; right:0; top:674px; opacity:.9;
+  filter: grayscale(1) sepia(1) hue-rotate(160deg) saturate(300%) brightness(.82);
+  pointer-events:none;
+}
+
+header{ display:flex; align-items:flex-start; justify-content:space-between; position:relative; z-index:1; }
+.doc-id{ text-align:right; font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--steel); letter-spacing:.05em; line-height:1.6; }
+.doc-id b{ color:var(--ink); font-weight:600; }
+
+.title-block{ margin-top:38px; position:relative; z-index:1; }
+.eyebrow{
+  font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--steel); font-weight:600; margin:0 0 6px;
+}
+.title-block h1{ font-size:64px; font-weight:700; margin:0; letter-spacing:-0.01em; line-height:1; }
+.title-block h2{ font-size:23px; font-weight:500; margin:10px 0 0; color:var(--ink-soft); letter-spacing:.01em; }
+
+.rule{ height:1px; background:var(--steel-pale); margin:28px 0 0; position:relative; z-index:1; }
+
+.body-grid{ display:flex; gap:36px; margin-top:30px; flex:1; position:relative; z-index:1; min-height:0; }
+.col-data{ flex:1.55; display:flex; flex-direction:column; gap:26px; min-width:0; }
+.col-valid{ flex:1; display:flex; flex-direction:column; align-items:center; padding-top:4px; }
+.valid-card{
+  width:260px; height:426px; box-sizing:border-box;
+  display:flex; flex-direction:column; align-items:center; gap:18px;
+  background:var(--paper); border:1px solid var(--steel-pale);
+  padding:26px 36px 26px;
+  clip-path: path('M 16,0 L 244,0 A 16,16 0 0 0 260,16 L 260,410 A 16,16 0 0 0 244,426 L 16,426 A 16,16 0 0 0 0,410 L 0,16 A 16,16 0 0 0 16,0 Z');
+}
+.valid-title{
+  font-family:'IBM Plex Sans',sans-serif; font-weight:700; font-size:14px;
+  letter-spacing:.03em; text-transform:uppercase; color:var(--ink);
+  padding-bottom:12px; border-bottom:1px solid var(--steel-pale); width:100%; text-align:center; margin:0;
+}
+
+dl.facts{ display:grid; grid-template-columns:1fr 1fr; gap:16px 24px; margin:0; }
+dl.facts div{ display:flex; flex-direction:column; gap:3px; }
+dl.facts dt{
+  font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--steel);
+}
+dl.facts dd{ margin:0; font-size:14px; color:var(--ink); font-weight:500; }
+dl.facts dd.muted{ color:var(--ink-soft); font-weight:400; font-size:12.5px; text-align:justify; hyphens:auto; }
+dl.facts .span-2{ grid-column:1 / -1; }
+
+table.spec{ width:100%; border-collapse:collapse; table-layout:fixed; }
+table.spec caption{
+  text-align:left; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--steel); margin-bottom:8px; font-weight:600;
+}
+table.spec tr{ border-top:1px solid var(--steel-pale); }
+table.spec tr:first-of-type{ border-top:1px solid var(--ink); }
+table.spec td{ padding:8px 0; font-size:12.5px; vertical-align:top; }
+table.spec td.field{ color:var(--steel-body); width:44%; }
+table.spec td.value{ color:var(--ink); font-weight:500; text-align:right; }
+
+.tags{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.tag{
+  font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.04em;
+  border:1px solid var(--steel-pale); color:var(--steel-body); padding:4px 9px;
+  display:inline-flex; align-items:center; gap:6px;
+}
+.tag-remove{ border:none; background:none; color:var(--steel); cursor:pointer; font-family:inherit; font-size:11px; padding:0; line-height:1; }
+.tag-add-input{
+  font-family:'IBM Plex Mono',monospace; font-size:10px; border:1px dashed var(--steel-pale);
+  padding:4px 9px; background:transparent; color:var(--ink); width:220px;
+}
+
+.note{ font-size:10px; color:var(--steel); font-style:italic; text-align:justify; hyphens:auto; margin:0; }
+.trace{ font-size:11px; color:var(--ink-soft); border-left:2px solid var(--steel-pale); padding-left:10px; text-align:justify; hyphens:auto; margin:0; }
+.stamp-label{ font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--steel); margin:0 0 6px; }
+
+.qr-card{
+  width:132px; height:132px; box-sizing:border-box;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--paper); border:1px solid var(--steel-pale);
+  padding:18px;
+  clip-path: path('M 7,0 L 125,0 A 7,7 0 0 0 132,7 L 132,125 A 7,7 0 0 0 125,132 L 7,132 A 7,7 0 0 0 0,125 L 0,7 A 7,7 0 0 0 7,0 Z');
+}
+
+footer{
+  position:relative; z-index:1; margin-top:auto; padding:16px 0 20px;
+  border-top:1px solid var(--steel-pale);
+  display:flex; align-items:center; justify-content:space-between;
+}
+footer .fl{ font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.08em; color:var(--steel); }
+footer .fr{
+  background:var(--ink); color:var(--paper); font-family:'IBM Plex Mono',monospace;
+  font-size:9.5px; letter-spacing:.05em; padding:6px 14px 6px 20px;
+  clip-path: polygon(14px 0, 100% 0, 100% 100%, 0 100%);
+}
+
+/* Campos editables: se ven idénticos al texto estático hasta que el mouse
+   pasa por encima o reciben foco (affordance mínima), y pierden todo
+   chrome de <input>/<textarea> al imprimir. */
+.field-input{
+  font: inherit; color: inherit; background: transparent; border: none; padding: 0; margin: 0;
+  width: 100%; text-align: inherit;
+}
+.field-input:hover, .field-input:focus{ background: var(--stage); outline: none; }
+table.spec .field-input{ text-align: right; }
+
+@media print{
+  @page{ size:A4; margin:0; }
+  html, body{ background:none; }
+  .cert-print-wrap{
+    width:210mm; height:297mm; overflow:hidden;
+  }
+  .cert-print-wrap .sheet{
+    transform: scale(0.881890);
+    transform-origin: top left;
+  }
+  .field-input{ border:none !important; background:transparent !important; }
+  .field-input:hover, .field-input:focus{ background: transparent; }
+}
+
+@media print{ .no-print{ display:none !important; } }
