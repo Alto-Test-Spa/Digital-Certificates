@@ -103,11 +103,17 @@ posponer con el riesgo documentado.
   por bueno.
 - El QR codifica una URL pública: `https://altotest.cl/verifica/:folio`.
 - **Endpoint nuevo, público, sin `Authorization`**: `GET
-  /verify/:kind/:code` en `altotest-documentos` — devuelve el documento
-  (no hay nada confidencial en un certificado, a diferencia de los hallazgos
-  de un informe) más un campo calculado `valid: boolean` (hoy ≤
-  `expirationDate`). Vive aparte de `GET /reports/:kind/:code` (que sigue
-  exigiendo Bearer, es el que usa el editor interno).
+  /verify/:kind/:code` en `altotest-documentos` — devuelve el mismo sobre
+  que `GET /reports/:kind/:code` (no hay nada confidencial en un
+  certificado, a diferencia de los hallazgos de un informe), pero sin
+  exigir Bearer. **Corrección tras revisar `worker/src/index.ts`:** el
+  Worker declara explícitamente que nunca interpreta la forma interna de
+  `doc` ("Contrato universal" — ni siquiera sabe que `propuesta_tecnica` no
+  tiene campo `cliente` fijo); calcular `valid: boolean` ahí adentro
+  rompería esa regla a propósito. El Worker sólo devuelve el sobre tal
+  cual; **`site/` calcula vigente/vencido** leyendo `doc.expirationDate` —
+  mismo criterio que ya usan para duplicar validación de formulario entre
+  `Contact.tsx` y `worker/src/index.ts` de ese mismo proyecto.
 - **Página nueva en `site/`** (el sitio público de Alto Test, ya tiene
   `react-router-dom`): ruta `/verifica/:folio` (con input manual también,
   para quien llega sin folio en la URL). Llama al endpoint público de
