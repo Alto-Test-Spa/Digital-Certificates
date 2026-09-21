@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+@theme {
+  --color-paper: #F4F5F2;
+  --color-stage: #DDDED9;
+  --color-ink: #10151E;
+  --color-ink-soft: #1B2430;
+  --color-steel: #4C6B7A;
+  --color-steel-light: #8FA3AD;
+  --color-steel-pale: #CBD5D8;
+  --color-steel-body: #2A313B;
+  --color-signal: #C2491F;
+}
+
 :root{
   --paper:#F4F5F2; --stage:#DDDED9; --ink:#10151E; --ink-soft:#1B2430;
   --steel:#4C6B7A; --steel-light:#8FA3AD; --steel-pale:#CBD5D8; --steel-body:#2A313B;
