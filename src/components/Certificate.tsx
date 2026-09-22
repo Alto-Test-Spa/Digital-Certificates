@@ -74,8 +74,6 @@ export function Certificate({ cert, onChange }: Props) {
             <Wordmark tone="ink" textClassName="text-[16px]" />
             <div className="doc-id">
               CERTIFICADO N° <b>{cert.code}</b>
-              <br />
-              Emitido <Field value={cert.certificationDate} onChange={(v) => set('certificationDate', v)} style={{ display: 'inline', width: 'auto' }} />
             </div>
           </header>
 
@@ -158,6 +156,10 @@ export function Certificate({ cert, onChange }: Props) {
                       onChange={(e) => set('certifiedCount', Number(e.target.value))}
                     />
                   </dd>
+                </div>
+                <div>
+                  <dt>Emitido</dt>
+                  <dd><Field value={cert.certificationDate} onChange={(v) => set('certificationDate', v)} /></dd>
                 </div>
                 <div>
                   <dt>Válido hasta</dt>
