@@ -112,8 +112,7 @@ export function Certificate({ cert, onChange }: Props) {
                 <div className="span-2">
                   <dt>Vigencia</dt>
                   <dd className="muted">
-                    Duración de 1 año calendario desde la fecha de certificación. Sujeto a inspección periódica
-                    conforme EN 365:2004.
+                    <Field value={cert.validityNote} onChange={(v) => set('validityNote', v)} />
                   </dd>
                 </div>
               </dl>

@@ -14,6 +14,8 @@ export function initialTemplate(): CertificateState {
     address: 'Apoquindo 5427, Las Condes, Región Metropolitana',
     certificationDate: '',
     expirationDate: '',
+    validityNote:
+      'Duración de 1 año calendario desde la fecha de certificación. Sujeto a inspección periódica conforme EN 365:2004.',
     deviceType: 'Tipo A — anclaje estructural fijo',
     substrate: 'Hormigón armado',
     materiality: 'Acero inoxidable A4',

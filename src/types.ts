@@ -11,6 +11,7 @@ export interface CertificateState {
   address: string
   certificationDate: string // dd-mm-aaaa
   expirationDate: string // dd-mm-aaaa
+  validityNote: string // texto editable bajo "Vigencia", ver Certificate.tsx
   deviceType: string
   substrate: string
   materiality: string
