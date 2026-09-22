@@ -31,7 +31,7 @@ export function StampSeal() {
       <circle cx={0} cy={0} r={R - 4.1} fill="none" stroke="#10151E" strokeWidth={0.35} />
       <text textAnchor="middle" fontFamily="IBM Plex Sans, sans-serif" fontWeight={700} fontSize={3.3} fill="#F4F5F2" letterSpacing="0.06em">
         <textPath href={`#${top.id}`} startOffset="50%">
-          CERTIFICADO
+          VALIDADO
         </textPath>
       </text>
       <text textAnchor="middle" fontFamily="IBM Plex Sans, sans-serif" fontWeight={700} fontSize={2.5} fill="#F4F5F2" letterSpacing="0.02em">
@@ -40,11 +40,8 @@ export function StampSeal() {
           PUNTOS DE ANCLAJE
         </textPath>
       </text>
-      <text x={0} y={-1} textAnchor="middle" fontFamily="IBM Plex Sans, sans-serif" fontWeight={700} fontSize={4.4} fill="#10151E">
+      <text x={0} y={1.6} textAnchor="middle" fontFamily="IBM Plex Sans, sans-serif" fontWeight={700} fontSize={4.4} fill="#10151E">
         ALTO TEST
-      </text>
-      <text x={0} y={4.8} textAnchor="middle" fontFamily="IBM Plex Sans, sans-serif" fontWeight={600} fontSize={2.9} fill="#10151E">
-        EN 795:2012
       </text>
     </svg>
   )

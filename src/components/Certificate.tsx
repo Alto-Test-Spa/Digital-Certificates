@@ -73,14 +73,12 @@ export function Certificate({ cert, onChange }: Props) {
           <header>
             <Wordmark tone="ink" textClassName="text-[16px]" />
             <div className="doc-id">
-              CERTIFICADO N° <b>{cert.code}</b>
+              DOCUMENTO N° <b>{cert.code}</b>
             </div>
           </header>
 
           <div className="title-block">
-            <p className="eyebrow">Certificación de dispositivo — EN 795:2012</p>
-            <h1>CERTIFICADO</h1>
-            <h2>DE PUNTOS DE ANCLAJE</h2>
+            <h1><Field value={cert.title} onChange={(v) => set('title', v)} /></h1>
           </div>
 
           <div className="rule" />
@@ -136,7 +134,7 @@ export function Certificate({ cert, onChange }: Props) {
                   </dd>
                 </div>
                 <div>
-                  <dt>Cantidad instalada</dt>
+                  <dt><Field value={cert.installedCountLabel} onChange={(v) => set('installedCountLabel', v)} /></dt>
                   <dd>
                     <input
                       className="field-input"
@@ -147,7 +145,7 @@ export function Certificate({ cert, onChange }: Props) {
                   </dd>
                 </div>
                 <div>
-                  <dt>Cantidad certificada</dt>
+                  <dt><Field value={cert.certifiedCountLabel} onChange={(v) => set('certifiedCountLabel', v)} /></dt>
                   <dd>
                     <input
                       className="field-input"
@@ -177,7 +175,7 @@ export function Certificate({ cert, onChange }: Props) {
                 <caption>Ficha técnica del lote</caption>
                 <tbody>
                   <tr>
-                    <td className="field">Tipo de dispositivo (EN 795)</td>
+                    <td className="field">Tipo / configuración de anclaje</td>
                     <td className="value"><Field value={cert.deviceType} onChange={(v) => set('deviceType', v)} /></td>
                   </tr>
                   <tr>
@@ -200,7 +198,7 @@ export function Certificate({ cert, onChange }: Props) {
               </table>
 
               <div>
-                <p className="stamp-label">Normas aplicables</p>
+                <p className="stamp-label">Normativa y referencias técnicas</p>
                 <div className="tags">
                   {cert.standards.map((s, i) => (
                     <span className="tag" key={i}>
@@ -240,7 +238,7 @@ export function Certificate({ cert, onChange }: Props) {
           </div>
 
           <footer>
-            <span className="fl">ALTO TEST · CERTIFICACIÓN DE PUNTOS DE ANCLAJE</span>
+            <span className="fl">ALTO TEST · PUNTOS DE ANCLAJE</span>
             <span className="fr">{cert.code}</span>
           </footer>
         </div>

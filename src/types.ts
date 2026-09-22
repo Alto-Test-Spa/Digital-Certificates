@@ -5,6 +5,7 @@
 // anclaje.
 export interface CertificateState {
   code: string
+  title: string // título principal editable — Certificado/Informe según el camino (ver Certificate.tsx)
   clientName: string
   clientRut: string
   clientAsset: string // recinto/edificio/proyecto
@@ -20,7 +21,9 @@ export interface CertificateState {
   materiality: string
   verificationTest: string
   testLoad: string
+  installedCountLabel: string // etiqueta editable: "Cantidad instalada"/"inspeccionada"/"existente"/etc.
   installedCount: number
+  certifiedCountLabel: string // etiqueta editable: "Cantidad ensayada"/etc.
   certifiedCount: number
   standards: string[] // chips "normas aplicables", editable
   description: string

@@ -12,6 +12,7 @@ const DEFAULT_REGION = 'Región Metropolitana de Santiago'
 export function initialTemplate(): CertificateState {
   return {
     code: '',
+    title: 'Certificado de Conformidad Técnica de Instalación',
     clientName: 'CBRE',
     clientRut: '76.754.016-7',
     clientAsset: 'Edificio Costanera Norte — Torre B',
@@ -22,13 +23,15 @@ export function initialTemplate(): CertificateState {
     certificationDate: '',
     expirationDate: '',
     validityNote:
-      'Duración de 1 año calendario desde la fecha de certificación. Sujeto a inspección periódica conforme EN 365:2004.',
+      'Duración de 12 meses desde la fecha de validación, sujeta al plan de inspección y mantenimiento y a que no existan modificaciones, impactos, eventos de caída o intervenciones que puedan alterar las condiciones del sistema.',
     deviceType: 'Tipo A — anclaje estructural fijo',
     substrate: 'Hormigón armado',
     materiality: 'Acero inoxidable A4',
     verificationTest: 'Pull-Out — tracción estática',
     testLoad: '12,5 kN (valor representativo del lote)',
+    installedCountLabel: 'Cantidad instalada',
     installedCount: 46,
+    certifiedCountLabel: 'Cantidad ensayada',
     certifiedCount: 46,
     standards: ['EN 795:2012 – Tipo A', 'BS 8610:2017', 'ACI 355.2 + ETA / documentación fabricante'],
     description: 'Certificado de lote, trazable al levantamiento técnico N° IL-20260615-093000, Alto Test.',

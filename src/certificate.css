@@ -37,12 +37,10 @@ header{ display:flex; align-items:flex-start; justify-content:space-between; pos
 .doc-id b{ color:var(--ink); font-weight:600; }
 
 .title-block{ margin-top:38px; position:relative; z-index:1; }
-.eyebrow{
-  font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.2em;
-  text-transform:uppercase; color:var(--steel); font-weight:600; margin:0 0 6px;
-}
-.title-block h1{ font-size:64px; font-weight:700; margin:0; letter-spacing:-0.01em; line-height:1; }
-.title-block h2{ font-size:23px; font-weight:500; margin:10px 0 0; color:var(--ink-soft); letter-spacing:.01em; }
+/* Título editable de largo variable (antes era "CERTIFICADO" fijo a 64px) —
+   ver Certificate.tsx: ahora puede ser cualquiera de tres frases largas
+   distintas, hace falta que quepan 2-3 líneas sin desbordar la hoja. */
+.title-block h1{ font-size:38px; font-weight:700; margin:0; letter-spacing:-0.01em; line-height:1.15; }
 
 .rule{ height:1px; background:var(--steel-pale); margin:28px 0 0; position:relative; z-index:1; }
 
