@@ -27,7 +27,7 @@ export function initialTemplate(): CertificateState {
     substrate: 'Hormigón armado',
     materiality: 'Acero inoxidable A4',
     verificationTest: 'Pull-Out — tracción estática',
-    testLoad: '12,5 kN (valor representativo del lote) *',
+    testLoad: '12,5 kN (valor representativo del lote)',
     installedCount: 46,
     certifiedCount: 46,
     standards: ['EN 795:2012 – Tipo A', 'BS 8610:2017', 'ACI 355.2 + ETA / documentación fabricante'],

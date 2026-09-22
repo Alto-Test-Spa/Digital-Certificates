@@ -191,12 +191,11 @@ export function Certificate({ cert, onChange }: Props) {
                     <td className="value"><Field value={cert.verificationTest} onChange={(v) => set('verificationTest', v)} /></td>
                   </tr>
                   <tr>
-                    <td className="field">Carga de ensayo aplicada *</td>
+                    <td className="field">Carga de ensayo aplicada</td>
                     <td className="value"><Field value={cert.testLoad} onChange={(v) => set('testLoad', v)} /></td>
                   </tr>
                 </tbody>
               </table>
-              <p className="note">* Ensayo individual por dispositivo, registrado en el respaldo técnico del lote.</p>
 
               <div>
                 <p className="stamp-label">Normas aplicables</p>
