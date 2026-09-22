@@ -1,4 +1,7 @@
-import { Wordmark } from './Wordmark'
+import FilePlus from 'reicon-react/icons/FilePlus'
+import Undo from 'reicon-react/icons/Undo'
+import Printer from 'reicon-react/icons/Printer'
+import { Logomark } from './Logomark'
 import { HistoryMenu } from './HistoryMenu'
 import { SyncStatus } from './SyncStatus'
 import type { CertificateState } from '../types'
@@ -16,22 +19,30 @@ interface Props {
 export function Toolbar({ cert, syncState, canUndo, onNew, onUndo, onOpen }: Props) {
   return (
     <div className="toolbar no-print">
-      <Wordmark tone="steel" textClassName="text-[14px]" />
-      <div className="toolbar-actions">
-        <SyncStatus state={syncState} />
-        <HistoryMenu currentCode={cert.code} onOpen={onOpen} />
-        {canUndo && (
-          <button type="button" className="toolbar-btn toolbar-btn--ghost" onClick={onUndo}>
-            Deshacer
-          </button>
-        )}
-        <button type="button" className="toolbar-btn toolbar-btn--ghost" onClick={onNew}>
-          Nuevo
+      <span className="toolbar-brand">
+        <Logomark tone="signal" width={26} height={11} />
+        ALTO&nbsp;TEST
+      </span>
+
+      <div className="toolbar-spacer" />
+
+      <SyncStatus state={syncState} />
+      <HistoryMenu currentCode={cert.code} onOpen={onOpen} />
+
+      <button type="button" className="toolbar-btn toolbar-btn--ghost" onClick={onNew}>
+        <FilePlus size={14} strokeWidth={2} className="icon" />
+        Nuevo
+      </button>
+      {canUndo && (
+        <button type="button" className="toolbar-btn toolbar-btn--ghost" onClick={onUndo}>
+          <Undo size={14} strokeWidth={2} className="icon" />
+          Deshacer
         </button>
-        <button type="button" className="toolbar-btn" onClick={() => window.print()}>
-          Imprimir / PDF
-        </button>
-      </div>
+      )}
+      <button type="button" className="toolbar-btn" onClick={() => window.print()}>
+        <Printer size={14} strokeWidth={2} className="icon" />
+        Imprimir / PDF
+      </button>
     </div>
   )
 }

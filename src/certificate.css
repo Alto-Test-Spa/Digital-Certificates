@@ -122,7 +122,11 @@ footer .fr{
    chrome de <input>/<textarea> al imprimir. */
 .field-input{
   font: inherit; color: inherit; background: transparent; border: none; padding: 0; margin: 0;
-  width: 100%; text-align: inherit;
+  width: 100%; text-align: inherit; display: block;
+  /* Un texto pegado sin espacios (URL larga, etc.) no debe desbordar su celda/columna —
+     que se parta dentro de la palabra si hace falta. Mismo criterio que
+     informe_levantamiento's .editable (src/index.css). */
+  overflow-wrap: anywhere; word-break: break-word;
 }
 .field-input:hover, .field-input:focus{ background: var(--stage); outline: none; }
 table.spec .field-input{ text-align: right; }

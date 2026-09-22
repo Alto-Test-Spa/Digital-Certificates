@@ -2,6 +2,7 @@ import type { CertificateState } from '../types'
 import { Wordmark } from './Wordmark'
 import { StampSeal } from './StampSeal'
 import { Qr } from './Qr'
+import { EditableText } from './EditableText'
 import towerSrc from '../assets/tower.svg'
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
@@ -20,7 +21,7 @@ function Field({
   onChange: (v: string) => void
   style?: CSSProperties
 }) {
-  return <input className="field-input no-print-chrome" value={value} onChange={(e) => onChange(e.target.value)} style={style} />
+  return <EditableText value={value} onChange={onChange} className="field-input no-print-chrome" style={style} />
 }
 
 export function Certificate({ cert, onChange }: Props) {
