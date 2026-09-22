@@ -19,9 +19,18 @@ export function AccessGate({ onSubmit }: Props) {
     if (!key.trim() || busy) return
     setBusy(true)
     setError('')
-    const ok = await onSubmit(key.trim())
-    setBusy(false)
-    if (!ok) setError('Clave incorrecta, o no hay conexión con el servidor.')
+    // Si onSubmit lanza (red caída, CORS, endpoint mal configurado) en vez de
+    // resolver a false, sin este try/finally el botón quedaba pegado en
+    // "Verificando..." para siempre — nunca se volvía a habilitar ni se
+    // mostraba ningún error.
+    try {
+      const ok = await onSubmit(key.trim())
+      if (!ok) setError('Clave incorrecta, o no hay conexión con el servidor.')
+    } catch {
+      setError('Clave incorrecta, o no hay conexión con el servidor.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
