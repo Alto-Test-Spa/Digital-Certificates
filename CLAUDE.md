@@ -15,13 +15,22 @@ si esa carpeta ya no existe, este archivo es el resumen que sobrevive.
 ## Qué es
 
 La app con la que Alto Test emite el **Certificado de Punto de Anclaje**
-(folio `CPA-aaaammdd-hhmmss`) — el paso de "Certificación" del ciclo completo
-que gestiona Alto Test (Diagnóstico → Diseño → Instalación →
-**Certificación** → Mantención). A diferencia de los informes/propuestas,
-este documento es **de lote, no por anclaje individual**: un certificado
-cubre N anclajes de un mismo recinto con un resumen agregado (cantidad
-instalada/certificada, ensayo representativo), no una fila por anclaje —
-decisión de la spec original, ver `types.ts`.
+(folio `CPA-aaaammdd-hhmmss`, prefijo sin cambios — ver "Título y tipo de
+documento" abajo) — el paso de "Certificación" del ciclo completo que
+gestiona Alto Test (Diagnóstico → Diseño → Instalación → **Certificación**
+→ Mantención). A diferencia de los informes/propuestas, este documento es
+**de lote, no por anclaje individual**: un certificado cubre N anclajes de
+un mismo recinto con un resumen agregado (cantidad instalada/ensayada,
+ensayo representativo), no una fila por anclaje — decisión de la spec
+original, ver `types.ts`.
+
+**No es un solo tipo de documento fijo** (feedback de Camilo, CEO de Alto
+Test, 2026-09-22, probando la app en vivo): la misma plantilla puede tomar
+tres caminos — *Certificado de Conformidad Técnica de Instalación*,
+*Certificado de Conformidad Técnica por Inspección y Verificación*, o
+*Informe de Inspección y Ensayo de Comprobación* — por eso el título
+principal y varias etiquetas dejaron de ser texto fijo. Ver "Título y tipo
+de documento" más abajo.
 
 Trae un **sello institucional dibujado con SVG/trigonometría** (no una
 imagen) y un **QR real y escaneable** (no decorativo) que apunta a
@@ -98,6 +107,7 @@ pisarse entre sí en un deploy) — ver ese CLAUDE.md, "Arquitectura de datos".
 ```ts
 interface CertificateState {
   code: string
+  title: string          // título principal, 100% editable, ver "Título y tipo de documento"
   clientName: string
   clientRut: string
   clientAsset: string   // recinto/edificio/proyecto
@@ -113,9 +123,11 @@ interface CertificateState {
   materiality: string
   verificationTest: string
   testLoad: string
+  installedCountLabel: string  // editable: "Cantidad instalada"/"inspeccionada"/"existente"/etc.
   installedCount: number
+  certifiedCountLabel: string   // editable: "Cantidad ensayada"/etc.
   certifiedCount: number
-  standards: string[]    // chips "normas aplicables", editable
+  standards: string[]    // chips "normativa y referencias técnicas", editable
   description: string
 }
 ```
@@ -134,6 +146,38 @@ ver el caso real de `region`/`comuna` abajo. La regla general: si un campo
 nuevo puede inferirse de uno viejo, hacerlo explícito en `normalizeCertificate()`
 en vez de dejar que el merge por defecto lo rellene con el valor de ejemplo
 de la plantilla.
+
+## Título y tipo de documento (`Certificate.tsx`, `lib/template.ts`)
+
+El H1 principal (antes fijo: "CERTIFICADO" / "DE PUNTOS DE ANCLAJE" en dos
+líneas, con un eyebrow fijo "Certificación de dispositivo — EN 795:2012"
+encima) es ahora **un solo campo 100% editable** (`title`), sin eyebrow.
+Motivo: Alto Test usa esta misma plantilla para tres tipos de documento
+distintos, con títulos que no comparten estructura de dos líneas:
+
+- Certificado de Conformidad Técnica de Instalación (default de la
+  plantilla, `initialTemplate()`)
+- Certificado de Conformidad Técnica por Inspección y Verificación
+- Informe de Inspección y Ensayo de Comprobación
+
+`.title-block h1` bajó de 64px (pensado para la única palabra
+"CERTIFICADO") a 38px con `line-height:1.15`, para que estas frases largas
+quepan en 2-3 líneas sin desbordar la hoja A4.
+
+**Lo que NO cambió, a propósito, porque no se pidió:** el prefijo de folio
+sigue siendo `CPA-` (`lib/code.ts`) y el header dice "DOCUMENTO N°" (ver
+abajo) en vez de derivar un prefijo distinto por tipo de documento — si en
+algún momento hace falta que el folio también varíe según el camino
+elegido, es un cambio a `generateCode()`/`isValidCode()`, no algo que
+`title` ya resuelva.
+
+**Otras etiquetas que pasaron de texto fijo a editable por la misma razón**
+(un documento de "Inspección" no necesariamente tiene una "cantidad
+certificada"): `installedCountLabel` (default "Cantidad instalada") y
+`certifiedCountLabel` (default "Cantidad ensayada", antes "Cantidad
+certificada" fijo) — el `<dt>` de esas dos filas ahora es un `Field`, igual
+que cualquier otro campo editable del documento; el valor numérico sigue
+siendo un `<input type="number">` sin cambios.
 
 ## Dirección: calle libre + Región/Comuna en cascada (`Certificate.tsx`, `lib/regiones.ts`)
 
@@ -236,8 +280,14 @@ después de que el usuario lo reportara en vivo, ver "Bugs ya cazados").
 ## Timbre institucional (`StampSeal.tsx`)
 
 Dibujado con SVG + trigonometría (no una imagen), portado del `<script>` del
-mockup aprobado a JSX declarativo: dos arcos de texto curvo (arriba/abajo)
-sobre un anillo doble, con "ALTO TEST" y "EN 795:2012" centrados.
+mockup aprobado a JSX declarativo: dos arcos de texto curvo — "VALIDADO"
+arriba, "PUNTOS DE ANCLAJE" abajo (antes decía "CERTIFICADO", cambiado a
+pedido de Camilo el 2026-09-22 porque no todo lo que pasa por este sello es
+un certificado) — sobre un anillo doble, con "ALTO TEST" centrado. Ya **no**
+lleva "EN 795:2012" (se sacó por el mismo pedido, texto fijo genérico que no
+aplica a los 3 tipos de documento) — `ALTO TEST` se recentró verticalmente
+(`y={1.6}`, antes `y={-1}` cuando compartía el centro con una segunda línea
+de texto debajo).
 
 **`ringPath()`'s sweep-flag es el complemento de `sweep`, no `sweep` mismo**
 (`d="... A ${R},${R} 0 0 ${1 - sweep} ..."`) — bug real de la especificación
