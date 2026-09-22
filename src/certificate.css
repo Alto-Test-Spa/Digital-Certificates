@@ -10,7 +10,9 @@
 .sheet{
   width:900px; height:1273px; background:var(--ink); padding:14px;
   position:relative; margin:0 auto;
-  clip-path: path('M 22,0 L 878,0 A 22,22 0 0 0 900,22 L 900,1251 A 22,22 0 0 0 878,1273 L 22,1273 A 22,22 0 0 0 0,1251 L 0,22 A 22,22 0 0 0 22,0 Z');
+  /* Experimento: esquina cuadrada por fuera (llena la hoja física
+     entera), la curva cóncava queda solo en .sheet-inner — ver charla
+     sobre el sobrante blanco al imprimir. */
 }
 .sheet-inner{
   width:100%; height:100%; background:var(--paper); position:relative; overflow:hidden;
