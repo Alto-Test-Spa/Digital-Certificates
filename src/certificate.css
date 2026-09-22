@@ -133,6 +133,16 @@ footer .fr{
 .field-input:hover, .field-input:focus{ background: var(--stage); outline: none; }
 table.spec .field-input{ text-align: right; }
 
+/* Selectores de Región/Comuna: solo en pantalla, nunca en el PDF impreso
+   (la línea de Dirección ya muestra el resultado como texto plano) — se
+   ocultan con .no-print, igual que el resto de la UI de edición. */
+.address-selects{ display:flex; gap:6px; margin-top:6px; }
+.address-selects select{
+  font:11.5px 'IBM Plex Sans', sans-serif; color:var(--ink-soft); background:var(--paper);
+  border:1px solid var(--steel-pale); border-radius:4px; padding:4px 6px; max-width:50%;
+}
+.address-selects select:disabled{ opacity:.5; }
+
 @media print{
   .cert-print-wrap, .cert-print-wrap *{
     -webkit-print-color-adjust: exact;

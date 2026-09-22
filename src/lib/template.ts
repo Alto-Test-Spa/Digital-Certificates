@@ -1,5 +1,9 @@
 import type { CertificateState } from '../types'
 
+const DEFAULT_STREET = 'Apoquindo 5427'
+const DEFAULT_COMUNA = 'Las Condes'
+const DEFAULT_REGION = 'Región Metropolitana de Santiago'
+
 // Certificado en blanco con datos de ejemplo ya escritos — se abre lleno,
 // no vacío (ver Certificate.tsx: los valores puntuales se marcan como
 // ilustrativos con un asterisco, igual que el mockup aprobado). Los campos
@@ -11,7 +15,10 @@ export function initialTemplate(): CertificateState {
     clientName: 'CBRE',
     clientRut: '76.754.016-7',
     clientAsset: 'Edificio Costanera Norte — Torre B',
-    address: 'Apoquindo 5427, Las Condes, Región Metropolitana',
+    street: DEFAULT_STREET,
+    comuna: DEFAULT_COMUNA,
+    region: DEFAULT_REGION,
+    address: [DEFAULT_STREET, DEFAULT_COMUNA, DEFAULT_REGION].join(', '),
     certificationDate: '',
     expirationDate: '',
     validityNote:
@@ -33,5 +40,14 @@ export function initialTemplate(): CertificateState {
 // viejo guardado sin ese campo no rompe la UI (mismo patrón que
 // normalizeReport en informe_levantamiento/src/lib/template.ts).
 export function normalizeCertificate(partial: Partial<CertificateState>): CertificateState {
-  return { ...initialTemplate(), ...partial }
+  const base = initialTemplate()
+  // Certificados guardados antes de que existieran region/comuna (ver
+  // Certificate.tsx): no rellenar con los valores de ejemplo de la
+  // plantilla, o se pisaría la dirección real. Toda la dirección vieja
+  // queda tal cual en `street`, y region/comuna quedan vacías para que se
+  // completen a mano — `address` no se toca, sigue mostrando lo guardado.
+  if (partial.region === undefined && partial.comuna === undefined && partial.address) {
+    return { ...base, ...partial, street: partial.address, region: '', comuna: '' }
+  }
+  return { ...base, ...partial }
 }

@@ -8,7 +8,10 @@ export interface CertificateState {
   clientName: string
   clientRut: string
   clientAsset: string // recinto/edificio/proyecto
-  address: string
+  street: string // calle y número, editable libre — ver Certificate.tsx
+  region: string // nombre oficial completo, ver lib/regiones.ts
+  comuna: string // filtrada según `region`, ver lib/regiones.ts
+  address: string // derivado de street + comuna + region, se recalcula en cada cambio — es el que viaja al Worker/site (ver api.ts, site/src/lib/verify.ts)
   certificationDate: string // dd-mm-aaaa
   expirationDate: string // dd-mm-aaaa
   validityNote: string // texto editable bajo "Vigencia", ver Certificate.tsx

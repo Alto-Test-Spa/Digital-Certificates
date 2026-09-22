@@ -3,6 +3,7 @@ import { Wordmark } from './Wordmark'
 import { StampSeal } from './StampSeal'
 import { Qr } from './Qr'
 import { EditableText } from './EditableText'
+import { REGIONES } from '../lib/regiones'
 import towerSrc from '../assets/tower.svg'
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
@@ -30,6 +31,24 @@ export function Certificate({ cert, onChange }: Props) {
   function set<K extends keyof CertificateState>(key: K, value: CertificateState[K]) {
     onChange({ [key]: value } as Partial<CertificateState>)
   }
+
+  // `address` es el único campo que viaja al Worker/site (ver types.ts) —
+  // se recalcula acá en cada cambio de calle/comuna/región para que
+  // siempre quede en sync, sin tocar site/ ni el Worker.
+  function setAddressPart(patch: Partial<Pick<CertificateState, 'street' | 'region' | 'comuna'>>) {
+    const street = patch.street ?? cert.street
+    const region = patch.region ?? cert.region
+    const comuna = patch.comuna ?? cert.comuna
+    onChange({ ...patch, address: [street, comuna, region].filter(Boolean).join(', ') })
+  }
+
+  function handleRegionChange(region: string) {
+    const comunas = REGIONES.find((r) => r.region === region)?.comunas ?? []
+    setAddressPart({ region, comuna: comunas.includes(cert.comuna) ? cert.comuna : '' })
+  }
+
+  const comunasDeLaRegion = REGIONES.find((r) => r.region === cert.region)?.comunas ?? []
+  const addressSuffix = [cert.comuna, cert.region].filter(Boolean).join(', ')
 
   function addStandard() {
     const v = newStandard.trim()
@@ -81,7 +100,42 @@ export function Certificate({ cert, onChange }: Props) {
                 </div>
                 <div className="span-2">
                   <dt>Dirección</dt>
-                  <dd><Field value={cert.address} onChange={(v) => set('address', v)} /></dd>
+                  <dd>
+                    <span>
+                      <Field
+                        value={cert.street}
+                        onChange={(v) => setAddressPart({ street: v })}
+                        style={{ display: 'inline', width: 'auto' }}
+                      />
+                      {addressSuffix && `, ${addressSuffix}`}
+                    </span>
+                    <div className="address-selects no-print">
+                      <select value={cert.region} onChange={(e) => handleRegionChange(e.target.value)}>
+                        <option value="" disabled>
+                          Región…
+                        </option>
+                        {REGIONES.map((r) => (
+                          <option key={r.region} value={r.region}>
+                            {r.region}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        value={cert.comuna}
+                        onChange={(e) => setAddressPart({ comuna: e.target.value })}
+                        disabled={!cert.region}
+                      >
+                        <option value="" disabled>
+                          Comuna…
+                        </option>
+                        {comunasDeLaRegion.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </dd>
                 </div>
                 <div>
                   <dt>Cantidad instalada</dt>
