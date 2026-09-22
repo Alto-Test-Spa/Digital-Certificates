@@ -1997,7 +1997,13 @@ function ringPath(id: string, startDeg: number, sweep: 0 | 1) {
   const rad = (startDeg * Math.PI) / 180
   const x = R * Math.sin(rad)
   const y = sweep === 1 ? R * Math.cos(rad) : -R * Math.cos(rad)
-  return { id, d: `M ${-x},${y} A ${R},${R} 0 0 ${sweep} ${x},${y}` }
+  // The arc's sweep-flag is the complement of `sweep` (not `sweep` itself):
+  // `sweep` picks the y-sign (top vs. bottom half via the ternary above), but
+  // per the SVG arc endpoint-to-center parameterization, landing the minor
+  // arc on this same origin-centered ring (rather than on the other,
+  // off-center circle of radius R that also passes through the two
+  // endpoints) requires the opposite sweep-flag value in the path command.
+  return { id, d: `M ${-x},${y} A ${R},${R} 0 0 ${1 - sweep} ${x},${y}` }
 }
 
 // Timbre institucional — trazado geométricamente (no una imagen), portado
@@ -2022,6 +2028,7 @@ export function StampSeal() {
         </textPath>
       </text>
       <text textAnchor="middle" fontFamily="IBM Plex Sans, sans-serif" fontWeight={700} fontSize={2.5} fill="#F4F5F2" letterSpacing="0.02em">
+        {/* @ts-expect-error — `side` is SVG2, not yet in React's SVGTextPathElement typings */}
         <textPath href={`#${bot.id}`} startOffset="50%" side="right">
           PUNTOS DE ANCLAJE
         </textPath>
@@ -2584,7 +2591,14 @@ export async function fetchVerification(code: string): Promise<VerificationResul
   if (!res.ok) return { found: false }
   const envelope = (await res.json()) as { code: string; updatedAt: number; doc: CertificateDoc }
   const expiration = parseDdMmAaaa(envelope.doc.expirationDate)
-  const valid = expiration !== null && new Date() <= expiration
+  // Truncar "hoy" a medianoche antes de comparar: el día completo del
+  // vencimiento cuenta como vigente, mismo criterio que
+  // digital_certificate/src/lib/date.ts's isStillValid() — sin esto, el
+  // certificado aparece "vencido" apenas pasa la medianoche de su propio
+  // día de vencimiento, mientras el editor todavía lo muestra vigente.
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const valid = expiration !== null && today.getTime() <= expiration.getTime()
   return { found: true, code: envelope.code, updatedAt: envelope.updatedAt, doc: envelope.doc, valid }
 }
 ```
