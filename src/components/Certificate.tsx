@@ -248,7 +248,7 @@ export function Certificate({ cert, onChange }: Props) {
                       <tr key={`extra-${j}`}>
                         <td>
                           <span className="spec-extra-label">
-                            <Field value={label} onChange={(v) => setExtraLabel(j, v)} style={{ display: 'inline', width: 'auto' }} />
+                            <Field value={label} onChange={(v) => setExtraLabel(j, v)} />
                             <button type="button" className="tag-remove no-print" onClick={() => removeExtraField(j)} title="Quitar propiedad">
                               ×
                             </button>

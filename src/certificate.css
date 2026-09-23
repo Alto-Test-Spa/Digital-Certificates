@@ -109,7 +109,7 @@ table.spec th.spec-col-head .tag-remove{ font-family:'IBM Plex Mono',monospace; 
 /* Fila de propiedad adicional ("+ agregar propiedad"): la etiqueta es
    editable, igual que cualquier otro campo, con su "×" al lado para
    quitar toda la fila (misma idea que el "×" de columna en el header). */
-.spec-extra-label{ display:inline-flex; align-items:center; gap:6px; }
+.spec-extra-label{ display:flex; align-items:center; gap:6px; }
 .spec-extra-label .tag-remove{ font-size:11px; }
 
 .tags{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
