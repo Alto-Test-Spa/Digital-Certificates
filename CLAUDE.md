@@ -84,8 +84,6 @@ src/
     date.ts                        todayDate()/addOneYear() (dd-mm-aaaa, CON GUIONES —
                                     distinto del dd/mm/aaaa de informe_levantamiento, es
                                     del mockup aprobado, no un error) + isStillValid()
-    regiones.ts                    REGIONES: 16 regiones oficiales de Chile (BCN) con
-                                    sus 346 comunas, ver "Dirección" más abajo
   components/
     AccessGate.tsx, SyncStatus.tsx, HistoryMenu.tsx, Toolbar.tsx   UI no imprimible
     EditableText.tsx               contentEditable — ver "Campos editables"
@@ -105,28 +103,33 @@ pisarse entre sí en un deploy) — ver ese CLAUDE.md, "Arquitectura de datos".
 ## Modelo de datos (`types.ts`)
 
 ```ts
+interface BatchItem {
+  deviceType: string
+  substrate: string
+  verificationTest: string
+  testLoad: string        // fijo: "6 kN" o "12 kN", ver "Ficha técnica del lote"
+  installedCount: number
+  certifiedCount: number
+  extra: string[]          // extra[j] ↔ CertificateState.extraSpecFields[j], ver abajo
+}
+
 interface CertificateState {
   code: string
   title: string          // título principal, 100% editable, ver "Título y tipo de documento"
   clientName: string
   clientRut: string
   clientAsset: string   // recinto/edificio/proyecto
-  street: string        // calle y número, texto libre
-  region: string        // nombre oficial completo, ver lib/regiones.ts
-  comuna: string         // filtrada según `region`
-  address: string         // DERIVADO de street+comuna+region, ver "Dirección"
+  address: string         // texto libre, editable directo (ver "Dirección" — hubo una
+                          // versión con Región/Comuna en cascada, se probó y se revirtió)
   certificationDate: string  // dd-mm-aaaa
   expirationDate: string     // dd-mm-aaaa
   validityNote: string        // texto editable bajo "Vigencia"
-  deviceType: string
-  substrate: string
-  materiality: string
-  verificationTest: string
-  testLoad: string
   installedCountLabel: string  // editable: "Cantidad instalada"/"inspeccionada"/"existente"/etc.
-  installedCount: number
+  installedCount: number        // DERIVADO: suma de batchItems[].installedCount
   certifiedCountLabel: string   // editable: "Cantidad ensayada"/etc.
-  certifiedCount: number
+  certifiedCount: number         // DERIVADO: suma de batchItems[].certifiedCount
+  batchItems: BatchItem[] // una fila por tipo/configuración de anclaje, ver "Ficha técnica del lote"
+  extraSpecFields: string[] // etiquetas de filas adicionales de la ficha técnica, ver mismo apartado
   standards: string[]    // chips "normativa y referencias técnicas", editable
   description: string
 }
@@ -137,15 +140,25 @@ Worker (ver "Arquitectura de datos" abajo) y el que consume `site/src/lib/verify
 como `CertificateDoc` (redeclarado ahí a propósito, no importado entre
 repos — no hay paquete compartido entre `digital_certificate` y `site`).
 Si se agrega un campo nuevo acá, hay que decidir a mano si `site/` también
-necesita mostrarlo.
+necesita mostrarlo — `site/`'s `CertificateDoc` sólo lee `address` y
+`certifiedCount` de este modelo (ninguno cambió de nombre ni de forma con
+`batchItems`, siguen siendo campos de nivel raíz), así que la migración a
+lote-con-varios-tipos no le exigió ningún cambio.
 
 **Migración de campos nuevos, sin romper certificados viejos**
 (`normalizeCertificate()`): nunca alcanza con `{ ...initialTemplate(),
 ...partial }` a secas si el campo nuevo reemplaza a otro que ya existía —
-ver el caso real de `region`/`comuna` abajo. La regla general: si un campo
-nuevo puede inferirse de uno viejo, hacerlo explícito en `normalizeCertificate()`
-en vez de dejar que el merge por defecto lo rellene con el valor de ejemplo
-de la plantilla.
+ver el caso real de los 5 campos sueltos de la ficha técnica que pasaron a
+vivir dentro de `batchItems[]` (ver "Ficha técnica del lote" abajo). La
+regla general: si un campo nuevo puede inferirse de uno viejo, hacerlo
+explícito en `normalizeCertificate()` en vez de dejar que el merge por
+defecto lo rellene con el valor de ejemplo de la plantilla. Caso
+particular real: `address` sobrevivió TODAS las formas anteriores del
+modelo (texto libre original → Región/Comuna en cascada → texto libre de
+nuevo) sin necesitar ninguna migración especial, porque siempre se
+mantuvo como el único campo completo y correcto que viaja al Worker/site
+— si un campo cumple ese rol, conviene no tocarlo al migrar otras partes
+del modelo a su alrededor.
 
 ## Título y tipo de documento (`Certificate.tsx`, `lib/template.ts`)
 
@@ -179,41 +192,103 @@ certificada" fijo) — el `<dt>` de esas dos filas ahora es un `Field`, igual
 que cualquier otro campo editable del documento; el valor numérico sigue
 siendo un `<input type="number">` sin cambios.
 
-## Dirección: calle libre + Región/Comuna en cascada (`Certificate.tsx`, `lib/regiones.ts`)
+## Dirección: texto libre, sin selectores (`Certificate.tsx`)
 
-Pedido explícito del usuario: la calle/número sigue como texto libre
-(`street`, mismo patrón `EditableText` que el resto), pero Región y Comuna
-pasaron de texto suelto a **selectores en cascada** — 16 regiones oficiales
-de Chile (nombres completos según la Biblioteca del Congreso Nacional,
-`"Región de..."`/`"Región del..."`/`"Región Metropolitana de Santiago"`) con
-sus 346 comunas, filtradas según la región elegida (`lib/regiones.ts`).
-Elegir una región cuya comuna actual no le pertenece limpia la comuna
-(`handleRegionChange` en `Certificate.tsx`), para no dejar una combinación
-inconsistente.
+`address` es un solo campo 100% editable (`EditableText`), sin estructura
+interna — quien certifica escribe la dirección completa a mano, como
+título/descripción/etc.
 
-**`address` es un campo derivado, no editable directamente** — se recalcula
-en cada cambio de `street`/`region`/`comuna` (`setAddressPart()`) como
-`[street, comuna, region].filter(Boolean).join(', ')`. Sigue siendo el único
-de los tres que viaja al Worker/`site` (ver "Modelo de datos"): así no hizo
-falta tocar ni `altotest-documentos` ni `site/src/lib/verify.ts` para esta
-feature — el contrato con ellos no cambió.
+**Se probó y se revirtió una versión con Región/Comuna en cascada**
+(2026-09-23, mismo día): calle libre + dos `<select>` (16 regiones
+oficiales de Chile con sus 346 comunas, filtradas en cascada,
+`lib/regiones.ts`), con `address` derivado de `street`+`comuna`+`región`.
+Se descartó por feedback directo del usuario probando la app en vivo — no
+un problema técnico de fondo, sino de experiencia: mostrar el valor
+compuesto Y los selectores a la vez se sentía redundante ("me desagrada
+que esté como aparte"), y poner el `<select>` de región inline junto al
+texto de la calle rompía el layout en pantalla (un `<select>` nativo no
+hace wrap palabra por palabra como texto normal — si no cabe en la línea,
+salta ENTERO a la siguiente y deja fragmentos sueltos, ej. una coma
+huérfana). Se probaron tres layouts distintos para esto (selects en
+bloque aparte abajo, selects inline con `.blend-select`/flechita CSS,
+"coma+select" agrupado en una unidad `white-space:nowrap` para evitar el
+salto de línea roto) antes de que el usuario pidiera volver
+directamente a texto libre. **Si se vuelve a pedir esta feature**, el
+código fuente de la versión con cascada está en el historial de git de
+este archivo y de `Certificate.tsx`/`types.ts`/`lib/template.ts` (buscar
+el commit que la revierte) — no hace falta rediseñarla desde cero, pero
+sí vale la pena leer esta nota primero para no repetir los mismos tres
+intentos fallidos de layout.
 
-Los dos `<select>` llevan clase `.address-selects.no-print` — **nunca deben
-imprimirse**, un `<select>` nativo no se puede "aplanar" visualmente como un
-`EditableText` (ver "Campos editables"). Lo que se imprime es siempre el
-texto plano compuesto: la calle vía `EditableText` (editable) seguida del
-sufijo `", {comuna}, {región}"` como texto estático (no editable a mano,
-sólo a través de los selectores).
+## Ficha técnica del lote: varios tipos de anclaje (`Certificate.tsx`, `types.ts`)
 
-**Certificados guardados antes de esta feature no se rompen**
-(`normalizeCertificate()` en `template.ts`): si el documento no trae
-`region`/`comuna` pero sí `address` (formato viejo), toda la dirección vieja
-se mueve completa a `street` **sin pisarla** con el ejemplo de la plantilla,
-y `region`/`comuna` quedan vacías (selectores en placeholder) para
-completarse a mano. El merge ingenuo `{ ...initialTemplate(), ...partial }`
-habría dejado `street`/`region`/`comuna` con los valores de ejemplo
-(Las Condes / Región Metropolitana) mientras `address` seguía mostrando la
-dirección real — inconsistencia silenciosa, evitada a propósito.
+Feedback real de Camilo (CEO), 2026-09-23: en un mismo trabajo (edificio
+RANCO) se instalan anclajes mecánicos a metal Y químicos a hormigón — dos
+tipos/configuraciones distintas en el mismo lote/certificado, algo que el
+modelo original (`deviceType`/`substrate`/`verificationTest`/`testLoad`/
+`installedCount`/`certifiedCount` como campos sueltos, un solo tipo por
+certificado) no podía representar.
+
+**Modelo**: esos campos pasaron a vivir en `batchItems: BatchItem[]` —
+una fila por tipo de anclaje, ver "Modelo de datos" arriba. `installedCount`/
+`certifiedCount` a nivel de `CertificateState` son ahora **derivados**
+(suma de `batchItems[].installedCount`/`certifiedCount`), recalculados en
+`Certificate.tsx`'s `setBatchItems()` en cada cambio — mismo criterio que
+`address` antes de la reversión de Región/Comuna: un campo derivado que
+sigue viajando igual al Worker/`site`, así no hubo que tocar ese contrato.
+La grilla superior de "Cantidad instalada/ensayada" (junto a Emitido/Válido
+hasta) se sacó del todo — mostrar el total ahí Y el desglose en la ficha
+técnica se sentía redundante (feedback real).
+
+**Layout de la tabla — 3 intentos antes de llegar al bueno**, todos
+probados en vivo:
+1. Una fila por tipo × 7 columnas de atributos → ilegible, wrap excesivo
+   en los ~462px de `.col-data` con texto técnico largo en español.
+2. Un bloque `dl.facts` (2 columnas) repetido completo por tipo → repetía
+   las mismas 7 etiquetas una vez por tipo (feedback real: "eso es repetir
+   arriba y abajo").
+3. **El que quedó**: la etiqueta va UNA sola vez a la izquierda (como el
+   diseño original de un solo tipo) y cada tipo agrega una COLUMNA de
+   valores a la derecha (`table.spec`, `table-layout:fixed`, primera
+   columna `width:38%`). Sin texto "Tipo A/B/C" en el header de columna —
+   ese nombre ya lo usa la clasificación EN 795 (Tipo A/B/C/D/E) que es
+   justamente el VALOR de la fila "Tipo / configuración de anclaje";
+   ponerlo también como encabezado de columna confundía dos cosas
+   distintas (feedback real: "ambos son tipo A... eso está mal"). El
+   header de columna sólo lleva el control de quitar (`×`, `.no-print`).
+
+**`materiality` se sacó del modelo por completo** (feedback real: "lo
+quitaría") — no quedó como campo oculto ni deprecado, se borró de
+`BatchItem`, la plantilla y la migración.
+
+**Carga de ensayo aplicada es un `<select>` de valores fijos** ("6 kN" /
+"12 kN"), no texto libre — pedido explícito. Mismo patrón que cualquier
+`<select>` en este documento: no se puede "aplanar" para el PDF, así que
+imprime un `.print-only` con el texto plano al lado; en pantalla se ve
+como el texto normal (`.blend-select`, ver "Dirección" arriba para el
+detalle de esta clase) con una flechita chica dibujada por CSS
+(`background-image` con un SVG inline, no un ícono) para que se note que
+es un selector — la flecha nunca imprime porque vive dentro del propio
+`<select>`, ya oculto con `.no-print`.
+
+**Filas adicionales libres ("+ agregar propiedad")**: además de agregar
+columnas (tipos de anclaje, `addBatchItem`/`removeBatchItem`), se puede
+agregar FILAS libres (`addExtraField`/`removeExtraField`) para datos que
+no están entre los 5 campos fijos — ej. diámetro de perno. Cada fila
+nueva agrega una etiqueta a `CertificateState.extraSpecFields` (compartida
+por toda la fila, editable) y un valor a `BatchItem.extra` en CADA tipo/
+columna existente, en el mismo índice — hay que mantener ambos arrays del
+mismo largo en todo punto donde se toque cualquiera de los dos
+(`addBatchItem` siembra `extra` del largo correcto para la columna nueva;
+`addExtraField`/`removeExtraField` tocan `extraSpecFields` Y todos los
+`batchItems` a la vez). `normalizeCertificate()` normaliza esto siempre
+(no sólo en una rama de migración): recorta o rellena con `''` cada
+`item.extra` para que `item.extra.length === extraSpecFields.length` pase
+en cualquier certificado, sin necesitar `?? []` defensivo en la UI.
+
+**Botón "+ agregar tipo de anclaje" quita/agrega columnas, mínimo 1
+siempre** (`removeBatchItem` no hace nada si sólo queda un tipo) — un
+certificado sin ningún tipo de anclaje no tiene sentido.
 
 ## Arquitectura de datos: Worker + KV compartido
 
@@ -396,6 +471,8 @@ Imprimir/PDF.
 | PDF impreso sin bordes/fondos | Falta `print-color-adjust: exact` — el marco del certificado es 100% `background-color`, sin `border` real; sin esa regla Chromium no imprime fondos por defecto. |
 | "Guardar como PDF" sugería un nombre de archivo genérico | `document.title` era estático. Fix: `useEffect` en `CertificateEditor.tsx` que lo sincroniza con `cert.code`. |
 | Esquina cóncava del marco dejaba espacio en blanco visible en el PDF impreso contra el borde real de la hoja A4 | Ver "Impresión" arriba — el `clip-path` cóncavo estaba tanto en `.sheet` (exterior) como en `.sheet-inner` (papel); se quitó del exterior. |
+| Un `<input type="number">` controlado dejaba escribir un cero a la izquierda ("06" en pantalla aunque `Number("06")` ya fuera `6`) | El navegador no descarta el cero a la izquierda por sí solo mientras se escribe. Fix: `parseCount()` en `Certificate.tsx` sanea el string a mano en `onChange` y muta `e.target.value` directamente, para que lo que se ve no diverja del dato. Bug real reportado en vivo con las cantidades de `batchItems`; probablemente preexistía desde que `installedCount`/`certifiedCount` eran `<input type="number">` sueltos, antes de esta feature — no verificado en los 3 hermanos. |
+| `<select>` de Región/Comuna inline junto a la calle rompía el layout (coma suelta, fragmento de texto saltado de línea) | Un `<select>` nativo no hace wrap palabra por palabra como texto normal — si no cabe en la línea salta ENTERO a la siguiente. Llevó a revertir toda la feature de Región/Comuna en cascada, ver "Dirección" arriba. |
 
 ## Verificación
 

@@ -70,16 +70,47 @@ dl.facts dd{ margin:0; font-size:14px; color:var(--ink); font-weight:500; }
 dl.facts dd.muted{ color:var(--ink-soft); font-weight:400; font-size:12.5px; text-align:justify; hyphens:auto; }
 dl.facts .span-2{ grid-column:1 / -1; }
 
+/* Ficha técnica del lote (ver CLAUDE.md, "Varios tipos de anclaje en un
+   mismo lote"). Se probaron antes: una fila por tipo x 7 columnas
+   (ilegible, wrap excesivo en los ~462px de .col-data) y un bloque dt/dd
+   repetido por tipo (repetía las mismas 7 etiquetas una vez por tipo,
+   feedback real: "eso es repetir arriba y abajo"). Diseño final: la
+   etiqueta va UNA sola vez a la izquierda —igual que el diseño original de
+   un solo tipo— y cada tipo agrega una COLUMNA de valores a la derecha, sin
+   repetir texto y con más ancho por valor que la tabla fila-por-tipo. */
+.spec-block{ display:flex; flex-direction:column; gap:4px; }
+
 table.spec{ width:100%; border-collapse:collapse; table-layout:fixed; }
 table.spec caption{
   text-align:left; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.14em;
-  text-transform:uppercase; color:var(--steel); margin-bottom:8px; font-weight:600;
+  text-transform:uppercase; color:var(--steel); margin-bottom:2px; font-weight:600;
 }
-table.spec tr{ border-top:1px solid var(--steel-pale); }
-table.spec tr:first-of-type{ border-top:1px solid var(--ink); }
-table.spec td{ padding:8px 0; font-size:12.5px; vertical-align:top; }
-table.spec td.field{ color:var(--steel-body); width:44%; }
-table.spec td.value{ color:var(--ink); font-weight:500; text-align:right; }
+table.spec thead th{ padding:0 6px 6px 0; border-bottom:1px solid var(--ink); }
+table.spec tbody td{ padding:7px 6px 7px 0; font-size:13px; font-weight:500; color:var(--ink); vertical-align:top; line-height:1.3; }
+table.spec th{ text-align:left; }
+table.spec td:first-child, table.spec th:first-child{ width:38%; color:var(--steel-body); font-weight:400; }
+table.spec tbody tr + tr td{ border-top:1px solid var(--steel-pale); }
+
+/* Sin texto "Tipo A/B/C" acá — ese nombre ya lo usa EN 795 para clasificar
+   el anclaje (Tipo A/B/C/D/E), y es justamente el valor que va en la fila
+   "Tipo / configuración de anclaje" de abajo; ponerlo también como
+   encabezado de columna confundía dos cosas distintas (feedback real:
+   "ambos son tipo A... eso está mal"). El encabezado sólo lleva el control
+   de quitar columna. */
+table.spec th.spec-col-head{ text-align:right; }
+table.spec th.spec-col-head .tag-remove{ font-family:'IBM Plex Mono',monospace; font-size:11px; }
+
+.batch-add-row{ display:flex; flex-wrap:wrap; gap:8px; }
+.batch-add{
+  font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.04em;
+  border:1px dashed var(--steel-pale); padding:5px 9px; background:transparent; color:var(--ink); cursor:pointer;
+}
+
+/* Fila de propiedad adicional ("+ agregar propiedad"): la etiqueta es
+   editable, igual que cualquier otro campo, con su "×" al lado para
+   quitar toda la fila (misma idea que el "×" de columna en el header). */
+.spec-extra-label{ display:inline-flex; align-items:center; gap:6px; }
+.spec-extra-label .tag-remove{ font-size:11px; }
 
 .tags{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
 .tag{
@@ -128,17 +159,31 @@ footer .fr{
   overflow-wrap: anywhere; word-break: break-word;
 }
 .field-input:hover, .field-input:focus{ background: var(--stage); outline: none; }
-table.spec .field-input{ text-align: right; }
 
-/* Selectores de Región/Comuna: solo en pantalla, nunca en el PDF impreso
-   (la línea de Dirección ya muestra el resultado como texto plano) — se
-   ocultan con .no-print, igual que el resto de la UI de edición. */
-.address-selects{ display:flex; gap:6px; margin-top:6px; }
-.address-selects select{
-  font:11.5px 'IBM Plex Sans', sans-serif; color:var(--ink-soft); background:var(--paper);
-  border:1px solid var(--steel-pale); border-radius:4px; padding:4px 6px; max-width:50%;
+/* Carga de ensayo aplicada: valores fijos (6 kN / 12 kN), no texto libre.
+   Un <select> nativo no se puede "aplanar" para el PDF como un
+   EditableText, así que sólo imprime un .print-only con el mismo valor en
+   texto plano; el select se ve como el texto normal de alrededor (hereda
+   tamaño/color) con una flechita chica dibujada por CSS para que se note
+   que es un selector — nunca imprime, va dentro del propio <select>, que
+   ya está en `.no-print`.
+
+   (Región/Comuna en cascada se probó en esta misma sección y se descartó
+   — ver CLAUDE.md, "Dirección": volvió a ser un solo campo de texto
+   libre, como al principio.) */
+.blend-select{
+  font: inherit; color: inherit; background: transparent; border: none; margin: 0;
+  appearance: none; -webkit-appearance: none; cursor: pointer;
+  padding: 0 13px 0 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cpath d='M1 2.5L4 5.5L7 2.5' stroke='%234C6B7A' stroke-width='1.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: 8px 8px;
 }
-.address-selects select:disabled{ opacity:.5; }
+.blend-select:hover, .blend-select:focus{ background-color: var(--stage); outline: none; }
+.blend-select:disabled{ opacity: .5; cursor: default; }
+
+.print-only{ display: none; }
 
 @media print{
   .cert-print-wrap, .cert-print-wrap *{
@@ -158,4 +203,4 @@ table.spec .field-input{ text-align: right; }
   .field-input:hover, .field-input:focus{ background: transparent; }
 }
 
-@media print{ .no-print{ display:none !important; } }
+@media print{ .no-print{ display:none !important; } .print-only{ display:inline !important; } }
